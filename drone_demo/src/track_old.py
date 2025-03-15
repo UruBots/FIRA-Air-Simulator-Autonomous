@@ -39,31 +39,31 @@ if __name__ == '__main__':
 
     try:
         drone.set_speed(0, 0, 0)
-        # drone.set_yaw(0)
+        drone.set_yaw(0)
         drone.takeoff()
         # drone.set_speed(0, 0, 2)
         time.sleep(0.3)
-        # drone.set_speed(SPEED, 0, 0)
+        drone.set_speed(SPEED, 0, 0)
 
         while True:
             # bottom_image = cv2.resize(drone.bottom_image, (640, 480))
-            # cv2.imshow('Bottom camera', bottom_image)
+            cv2.imshow('Bottom camera', drone.bottom_image)
             # front_image = cv2.resize(drone.front_image, (640, 480))
             cv2.imshow('Front camera', drone.front_image)
 
-            # yaw_target_value = calculate_yaw(drone)
-            # if yaw_target_value is not None:
-            #     yaw_speed = yaw_pid.update(-yaw_target_value)
-            #     print("Delta yaw =", yaw_target_value, "New yaw speed =", yaw_speed)
-            #     drone.set_yaw(yaw_speed)
-            #
-            # z_target_value = calculate_delta_z(drone)
-            # if z_target_value is not None:
-            #     z_speed = z_pid.update(z_target_value)
-            #     print("Delta Z =", z_target_value, "New Z speed =", z_speed)
-            #     drone.set_speed_z(z_speed)
-            #
-            # print("---")
+            yaw_target_value = calculate_yaw(drone)
+            if yaw_target_value is not None:
+                yaw_speed = yaw_pid.update(-yaw_target_value)
+                print("Delta yaw =", yaw_target_value, "New yaw speed =", yaw_speed)
+                drone.set_yaw(yaw_speed)
+
+            z_target_value = calculate_delta_z(drone)
+            if z_target_value is not None:
+                z_speed = z_pid.update(z_target_value)
+                print("Delta Z =", z_target_value, "New Z speed =", z_speed)
+                drone.set_speed_z(z_speed)
+
+            print("---")
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
