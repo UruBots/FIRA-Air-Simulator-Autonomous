@@ -2,8 +2,11 @@ from typing import Any, Tuple, List
 import cv2
 import numpy as np
 
+from geometry import *
+from src.geometry import Point
 
-def get_rects(image: Any, lower_: np.array, upper_: np.array) -> Tuple[Any, List[Any]]:
+
+def get_rects(image: Any, lower_: np.array, upper_: np.array) -> Tuple[Any, List[List[Point]]]:
     res_img_ = image.copy()
     hsv_ = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     mask_ = cv2.inRange(hsv_, lower_, upper_)
@@ -16,7 +19,7 @@ def get_rects(image: Any, lower_: np.array, upper_: np.array) -> Tuple[Any, List
     # Поиск контуров
     contours_, _ = cv2.findContours(mask_, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    rectangles_ = []
+    rectangles_: List[List[Point]] = []
     for cnt_ in contours_:
         # Аппроксимация контура полигоном
         epsilon_ = 0.02 * cv2.arcLength(cnt_, True)
@@ -29,10 +32,21 @@ def get_rects(image: Any, lower_: np.array, upper_: np.array) -> Tuple[Any, List
         if len(approx_) == 4:
             # Преобразование координат и добавление в результат
             points_ = approx_.reshape(-1, 2).tolist()
-            rectangles_.append(points_)
+
+            curr_rect: List[Point] = []
+            for point in points_:
+                curr_rect.append(Point(*point))
+            rectangles_.append(curr_rect)
 
             # Отрисовка контура (опционально)
             cv2.drawContours(res_img_, [approx_], -1, (0, 255, 0), 3)
 
 
     return res_img_, rectangles_
+
+def get_the_biggest_gate(gates: List[List[Point]]) -> List[Point] or None:
+    if len(gates) == 0:
+        return None
+
+    areas = list(map(polygon_area, gates))
+    return gates[areas.index(max(areas))]
