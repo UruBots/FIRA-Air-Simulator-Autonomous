@@ -44,13 +44,13 @@ pip3 install catkin_pkg
 ### Installation
 ```bash
 # Setup catkin workspace
-mkdir -p ~/catkin_ws/src
-cd ~/catkin_ws/
+mkdir -p ~/fira/src
+cd ~/fira/
 catkin init
 # Add workspace to bashrc.
-echo 'source ~/catkin_ws/devel/setup.bash' >> ~/.bashrc
+echo 'source ~/fira/devel/setup.bash' >> ~/.bashrc
 cd src
-git clone https://github.com/FIRAAir/FIRA-Air-Simulator.git
+git clone https://github.com/FTL-drone-club/FIRA-Air-Simulator/tree/main
 cd ..
 catkin_make
 source ~/.bashrc
