@@ -33,12 +33,13 @@ def imgmsg_to_cv2(img_msg):
 
 
 class Drone(object):
-
     def __init__(self):
-        self.ctrl_c = False
+        self.ctrl_c: bool = False
 
-        self.bottom_image = None
-        self.front_image = None
+        self.bottom_image: cv2.Mat | None = None
+        self.front_image: cv2.Mat | None = None
+
+        self._is_flight: bool = False
 
         self.rate = rospy.Rate(1)
 
@@ -62,13 +63,13 @@ class Drone(object):
             self.front_image_processing
         )  # Front camera
 
-    def down_image_processing(self, image):
+    def down_image_processing(self, image) -> None:
         self.bottom_image = cv2.cvtColor(imgmsg_to_cv2(image), cv2.COLOR_RGB2BGR)
 
-    def front_image_processing(self, image):
+    def front_image_processing(self, image) -> None:
         self.front_image = cv2.cvtColor(imgmsg_to_cv2(image), cv2.COLOR_RGB2BGR)
 
-    def publish_once_in_cmd_vel(self, cmd):
+    def publish_once_in_cmd_vel(self, cmd) -> None:
         while not self.ctrl_c:
             connections = self._pub_cmd_vel.get_num_connections()
             if connections > 0:
@@ -78,22 +79,27 @@ class Drone(object):
             else:
                 self.rate.sleep()
 
-    def update_cmd_vel(self):
+    def update_cmd_vel(self) -> None:
         self.publish_once_in_cmd_vel(self._move_msg)
 
-    def takeoff(self):
+    def takeoff(self) -> None:
         for i in range(3):
             self._pub_takeoff.publish(Empty())
             rospy.loginfo('Taking off...')
-            time.sleep(1)
+            time.sleep(0.5)
+        self._is_flight = True
 
-    def land(self):
+    def land(self) -> None:
         for i in range(3):
             self._pub_land.publish(Empty())
             rospy.loginfo('Landing...')
-            time.sleep(1)
+            time.sleep(0.5)
+        self._is_flight = True
 
-    def set_speed(self, x: float, y: float, z: float):
+    def is_flight(self) -> bool:
+        return self._is_flight
+
+    def set_speed(self, x: float, y: float, z: float) -> None:
         moving = Twist()
         moving.linear.x = x
         moving.linear.y = y
@@ -101,10 +107,10 @@ class Drone(object):
         self._move_msg = moving
         self.update_cmd_vel()
 
-    def set_speed_z(self, z: float):
+    def set_speed_z(self, z: float) -> None:
         self._move_msg.linear.z = z
         self.update_cmd_vel()
 
-    def set_yaw(self, angle: float):
+    def set_yaw(self, angle: float) -> None:
         self._move_msg.angular.z = angle
         self.update_cmd_vel()

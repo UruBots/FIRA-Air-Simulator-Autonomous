@@ -33,3 +33,10 @@ def polygon_center(points: List[Point]) -> Point:
     result.y /= len(points)
 
     return result
+
+def get_the_biggest_polygon(polygons: List[List[Point]]) -> List[Point] or None:
+    if len(polygons) == 0:
+        return None
+
+    areas = list(map(polygon_area, polygons))
+    return polygons[areas.index(max(areas))]

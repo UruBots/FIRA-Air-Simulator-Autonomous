@@ -3,10 +3,13 @@ import cv2
 import numpy as np
 
 from geometry import *
-from src.geometry import Point
 
 
-def get_rects(image: Any, lower_: np.array, upper_: np.array) -> Tuple[Any, List[List[Point]]]:
+def get_rects(
+        image: Any,
+        lower_: np.array,
+        upper_: np.array
+) -> Tuple[Any, List[List[Point]]]:
     res_img_ = image.copy()
     hsv_ = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     mask_ = cv2.inRange(hsv_, lower_, upper_)
@@ -44,9 +47,19 @@ def get_rects(image: Any, lower_: np.array, upper_: np.array) -> Tuple[Any, List
 
     return res_img_, rectangles_
 
-def get_the_biggest_gate(gates: List[List[Point]]) -> List[Point] or None:
-    if len(gates) == 0:
-        return None
+def get_the_biggest_gates(
+        image: Any,
+        lower_: np.array = np.array([140, 0, 0]),
+        upper_: np.array = np.array([200, 255, 255])
+) -> List[Point]:
+    image, rects = get_rects(
+        image,
+        np.array([140, 0, 0]),
+        np.array([200, 255, 255])
+    )
+    biggest_gates = get_the_biggest_polygon(rects)
 
-    areas = list(map(polygon_area, gates))
-    return gates[areas.index(max(areas))]
+    return biggest_gates
+
+def get_horizontal_angle(gate: List[Point]) -> float:
+    pass
