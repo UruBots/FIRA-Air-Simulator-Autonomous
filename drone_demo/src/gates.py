@@ -32,7 +32,8 @@ def get_rects(
         cv2.drawContours(res_img_, [approx_], -1, (255, 255, 0), 3)
 
         # Отбор только четырехугольников
-        if len(approx_) == 4:
+        # if len(approx_) == 4:
+        if True:
             # Преобразование координат и добавление в результат
             points_ = approx_.reshape(-1, 2).tolist()
 

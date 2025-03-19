@@ -41,7 +41,7 @@ class Drone(object):
 
         self._is_flight: bool = False
 
-        self.rate = rospy.Rate(1)
+        self.rate = rospy.Rate(20)
 
         self._move_msg = Twist()
 
@@ -70,17 +70,11 @@ class Drone(object):
         self.front_image = cv2.cvtColor(imgmsg_to_cv2(image), cv2.COLOR_RGB2BGR)
 
     def publish_once_in_cmd_vel(self, cmd) -> None:
-        while not self.ctrl_c:
-            connections = self._pub_cmd_vel.get_num_connections()
-            if connections > 0:
-                self._pub_cmd_vel.publish(cmd)
-                # rospy.loginfo("Publish in cmd_vel...")
-                break
-            else:
-                self.rate.sleep()
+        self._pub_cmd_vel.publish(cmd)
 
     def update_cmd_vel(self) -> None:
-        self.publish_once_in_cmd_vel(self._move_msg)
+        for i in range(3):
+            self.publish_once_in_cmd_vel(self._move_msg)
 
     def takeoff(self) -> None:
         for i in range(3):
@@ -99,11 +93,15 @@ class Drone(object):
     def is_flight(self) -> bool:
         return self._is_flight
 
-    def set_speed(self, x: float, y: float, z: float) -> None:
+    def set_speed(self, linear_x: float = None, linear_y: float = None, linear_z: float = None,
+                  angular_x: float = None, angular_y: float = None, angular_z: float = None) -> None:
         moving = Twist()
-        moving.linear.x = x
-        moving.linear.y = y
-        moving.linear.z = z
+        if linear_x is not None: moving.linear.x = linear_x
+        if linear_y is not None: moving.linear.y = linear_y
+        if linear_z is not None: moving.linear.z = linear_z
+        if angular_x is not None: moving.angular.x = angular_x
+        if angular_y is not None: moving.angular.y = angular_y
+        if angular_z is not None: moving.angular.z = angular_z
         self._move_msg = moving
         self.update_cmd_vel()
 
