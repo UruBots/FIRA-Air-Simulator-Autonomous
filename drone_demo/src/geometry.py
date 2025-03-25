@@ -22,7 +22,7 @@ def polygon_area(points: List[Point]) -> float:
 
     return abs(area / 2.0)
 
-def polygon_center(points: List[Point]) -> Point:
+def polygon_mean_of_vertexes(points: List[Point]) -> Point:
     result: Point = Point(0, 0)
 
     for point in points:
@@ -33,6 +33,18 @@ def polygon_center(points: List[Point]) -> Point:
     result.y /= len(points)
 
     return result
+
+def polygon_center(points: List[Point]) -> Point:
+    min_point: Point = Point(points[0].x, points[0].y)
+    max_point: Point = Point(points[0].x, points[0].y)
+
+    for point in points:
+        min_point.x = min(min_point.x, point.x)
+        min_point.y = min(min_point.y, point.y)
+        max_point.x = max(max_point.x, point.x)
+        max_point.y = max(max_point.y, point.y)
+
+    return Point((min_point.x + max_point.x) // 2, (min_point.y + max_point.y) // 2)
 
 def get_the_biggest_polygon(polygons: List[List[Point]]) -> List[Point] or None:
     if len(polygons) == 0:

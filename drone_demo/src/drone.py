@@ -76,6 +76,9 @@ class Drone(object):
         for i in range(3):
             self.publish_once_in_cmd_vel(self._move_msg)
 
+    def stop(self):
+        self.set_speed(0, 0, 0, 0, 0, 0)
+
     def takeoff(self) -> None:
         for i in range(3):
             self._pub_takeoff.publish(Empty())
@@ -95,7 +98,7 @@ class Drone(object):
 
     def set_speed(self, linear_x: float = None, linear_y: float = None, linear_z: float = None,
                   angular_x: float = None, angular_y: float = None, angular_z: float = None) -> None:
-        moving = Twist()
+        moving = self._move_msg
         if linear_x is not None: moving.linear.x = linear_x
         if linear_y is not None: moving.linear.y = linear_y
         if linear_z is not None: moving.linear.z = linear_z
