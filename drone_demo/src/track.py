@@ -21,7 +21,6 @@ if __name__ == '__main__':
 
     try:
         drone.set_speed(0, 0, 0, 0, 0, 0)
-        drone.set_yaw(0)
         drone.takeoff()
         drone.set_speed(0, 0, 1.3, 0, 0, 0)
         time.sleep(0.4)

@@ -110,5 +110,3 @@ class CenterGates(object):
 
     def is_active(self) -> bool:
         return self._is_thread_active
-
-# TODO Пофиксить ситуацию, когда считаем большую балку воротами

@@ -19,7 +19,7 @@ if __name__ == '__main__':
     rospy.init_node('track_with_model')
     drone = Drone()
 
-    model = YOLO('/home/artem627/fira/src/FIRA-Air-Simulator/drone_demo/src/models/pose_estimation.pt')
+    model = YOLO('/home/artem627/fira/src/FIRA-Air-Simulator/drone_demo/src/models/pose_estimation_2.pt')
 
     try:
         drone.stop()
