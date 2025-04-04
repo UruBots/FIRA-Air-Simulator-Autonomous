@@ -7,7 +7,7 @@ import math
 
 import gates
 import geometry
-from track_module import *
+from drone import Drone
 import gates_flight
 
 
@@ -32,7 +32,7 @@ if __name__ == '__main__':
             _image = drone.front_image.copy()
             _image_height, _image_width, _image_channels = _image.shape
 
-            _the_biggest_gates = gates.get_the_biggest_gates(drone.front_image)
+            _the_biggest_gates = gates.get_the_biggest_polygon_in_image(drone.front_image)
             if _the_biggest_gates is not None:
                 if geometry.polygon_area(_the_biggest_gates) >= (_image_height * _image_width * 0.5):
                     if center_gates.is_active():
