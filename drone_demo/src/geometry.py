@@ -52,3 +52,28 @@ def get_the_biggest_polygon(polygons: List[List[Point]]) -> List[Point] or None:
 
     areas = list(map(polygon_area, polygons))
     return polygons[areas.index(max(areas))]
+
+def sort_vertexes(polygon: List[Point]) -> List[Point] or None:
+    if len(polygon) != 4:
+        return None
+
+    result: List[Point] = []
+
+    center_of_polygon = polygon_center(polygon)
+
+    for i in range(len(polygon)):
+        for point in polygon:
+            if i == 0:
+                if point.x < center_of_polygon.x and point.y < center_of_polygon.y:
+                    result.append(point)
+            elif i == 1:
+                if point.x > center_of_polygon.x and point.y < center_of_polygon.y:
+                    result.append(point)
+            elif i == 2:
+                if point.x > center_of_polygon.x and point.y > center_of_polygon.y:
+                    result.append(point)
+            elif i == 3:
+                if point.x < center_of_polygon.x and point.y > center_of_polygon.y:
+                    result.append(point)
+
+    return [result]

@@ -4,7 +4,9 @@ import rospy
 import time
 
 import gates
+from geometry import Point, sort_vertexes
 from drone import Drone
+from typing import Any, Tuple, List
 
 ACCURACY = 60
 SPEED = 0.8
@@ -54,8 +56,18 @@ if __name__ == '__main__':
             _result_image = drone.front_image.copy()
 
             _biggest_gates = gates.get_the_biggest_gates(drone.front_image)
+
+            test_rect = [
+                Point(230, 120),
+                Point(411, 120),
+                Point(411, 241),
+                Point(230, 241)
+            ]
+
             if _biggest_gates is not None:
+                # sorted_biggest_gates: List[Point] = sort_vertexes(_biggest_gates)
                 gates.draw_polygon(_result_image, _biggest_gates)
+                print(gates.get_gates_angles(_biggest_gates))
 
             cv2.imshow('Camera', _input_image)
             cv2.imshow('Result', _result_image)

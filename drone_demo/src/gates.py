@@ -143,10 +143,6 @@ def get_the_biggest_gates(
             else:
                 graph[i][j] = 0
 
-    for i in range(n):
-        print(graph[i])
-    print("---")
-
     max_gates: List[Point] = []
     max_similarity = 0
 
@@ -171,3 +167,70 @@ def get_the_biggest_gates(
     cv2.imshow("Image view", image_view)
 
     return max_gates
+
+def euler_angles_from_rotation_matrix(R):
+    sy = np.sqrt(R[0,0] ** 2 + R[1,0] ** 2)
+    singular = sy < 1e-6
+
+    if not singular:
+        x = np.arctan2(R[2,1], R[2,2])  # Угол вокруг X
+        y = np.arctan2(-R[2,0], sy)      # Угол вокруг Y
+        z = np.arctan2(R[1,0], R[0,0])   # Угол вокруг Z
+    else:
+        x = np.arctan2(-R[1,2], R[1,1])
+        y = np.arctan2(-R[2,0], sy)
+        z = 0
+
+    return np.array([x, y, z])
+
+def get_gates_angles(gates_point: List[Point]) -> List[float] or None:
+    if gates_point is None or len(gates_point) < 4:
+        return None
+
+    # Параметры камеры (замените на реальные значения)
+    fx, fy = 185.69, 185.69  # Фокусные расстояния
+    cx, cy = 320.5, 180.5  # Оптический центр
+    camera_matrix = np.array([[fx, 0, cx],
+                              [0, fy, cy],
+                              [0, 0, 1]], dtype=np.float32)
+    dist_coeffs = np.zeros((4, 1))  # Коэффициенты искажения (предполагаем отсутствие)
+
+    # Размеры прямоугольника в метрах (ширина и высота)
+    width, height = 0.9, 0.6
+
+    # 3D точки прямоугольника в локальной системе координат (Z=0)
+    object_points = np.array([
+        [0, 0, 0],  # Левый верхний
+        [width, 0, 0],  # Правый верхний
+        [width, height, 0],  # Правый нижний
+        [0, height, 0]  # Левый нижний
+    ], dtype=np.float32)
+
+    # Точки на изображении (пример, замените на реальные координаты)
+    # image_points = np.array([
+    #     [100, 100],  # Левый верхний угол
+    #     [500, 100],  # Правый верхний
+    #     [500, 300],  # Правый нижний
+    #     [100, 300]  # Левый нижний
+    # ], dtype=np.float32)
+
+    image_points = np.array([
+        [gates_point[0].x, gates_point[0].y],
+        [gates_point[1].x, gates_point[1].y],
+        [gates_point[2].x, gates_point[2].y],
+        [gates_point[3].x, gates_point[3].y]
+    ], dtype=np.float32)
+
+    # Решение PnP
+    success, rvec, tvec = cv2.solvePnP(
+        object_points, image_points, camera_matrix, dist_coeffs
+    )
+
+    # Преобразование вектора поворота в матрицу
+    rotation_matrix, _ = cv2.Rodrigues(rvec)
+
+    # Получение углов Эйлера
+    euler_angles = euler_angles_from_rotation_matrix(rotation_matrix)
+    angles_deg = np.degrees(euler_angles)  # Конвертация в градусы
+
+    return [angles_deg[0], angles_deg[1], angles_deg[2]]
