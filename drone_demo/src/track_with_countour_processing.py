@@ -65,9 +65,12 @@ if __name__ == '__main__':
             ]
 
             if _biggest_gates is not None:
-                # sorted_biggest_gates: List[Point] = sort_vertexes(_biggest_gates)
-                gates.draw_polygon(_result_image, _biggest_gates)
-                print(gates.get_gates_angles(_biggest_gates))
+                if len(_biggest_gates) != 4:
+                    print("ERROR")
+                else:
+                    sorted_biggest_gates: List[Point] = sort_vertexes(_biggest_gates)
+                    gates.draw_polygon(_result_image, sorted_biggest_gates)
+                    print(gates.get_gates_angles(sorted_biggest_gates))
 
             cv2.imshow('Camera', _input_image)
             cv2.imshow('Result', _result_image)

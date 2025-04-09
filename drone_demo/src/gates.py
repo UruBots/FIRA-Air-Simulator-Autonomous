@@ -113,12 +113,12 @@ def get_the_biggest_gates(
             if i != j:
                 line_mask.fill(0)
 
-                # Рисуем линию толщиной 3 пикселя
+                # Рисуем линию толщиной
                 cv2.line(
                     line_mask,
                     (biggest_polygon[i].x, biggest_polygon[i].y),
                     (biggest_polygon[j].x, biggest_polygon[j].y),
-                    (255, 255, 255), 1
+                    (255, 255, 255), 3
                 )
 
                 # white_mask = get_mask(line_mask, np.array([0, 0, 200]), np.array([180, 30, 255]))
@@ -129,13 +129,14 @@ def get_the_biggest_gates(
                 # Считаем количество розовых пикселей на линии
                 all_pixels_count = cv2.countNonZero(line_mask)
                 pink_pixels_count = cv2.countNonZero(intersection)
-                if pink_pixels_count / all_pixels_count >= 0.6:
+                if pink_pixels_count / all_pixels_count >= 0.5:
                     graph[i][j] = pink_pixels_count / all_pixels_count
+                    # graph[i][j] = pink_pixels_count
                     cv2.line(
                         image_view,
                         (biggest_polygon[i].x, biggest_polygon[i].y),
                         (biggest_polygon[j].x, biggest_polygon[j].y),
-                        (0, 255 * graph[i][j], 255 * graph[i][j]), 3
+                        (0, 255 * graph[i][j], 255 * graph[i][j]), 2
                     )
                 else:
                     graph[i][j] = 0
