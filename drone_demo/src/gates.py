@@ -7,10 +7,10 @@ from geometry import *
 
 
 # Потом прокомментирую
-MAX_GATES_DIAGONAL_PINK_PERCENTAGE = 0.6
+MIN_GATES_DIAGONAL_NON_PINK_PERCENTAGE = 0.75
 
 # Тоже потом
-MIN_GATES_EDGES_PINK_PERCENTAGE = 0.3
+MIN_GATES_EDGES_PINK_PERCENTAGE = 0.09
 
 
 def get_mask(
@@ -104,17 +104,17 @@ def get_the_biggest_gates(
     image_view = image.copy()
     draw_polygon(image_view, biggest_polygon)
 
-    # Если ворота это и так четырехугольник, то возвращаем его без изменений
-    if len(biggest_polygon) == 4:
-        return biggest_polygon
+    # # Если ворота это и так четырехугольник, то возвращаем его без изменений
+    # if len(biggest_polygon) == 4:
+    #     return biggest_polygon
 
     n = len(biggest_polygon)
     graph: List[List[float]] = []
 
     for i in range(n):
-        buffer: List[float] = []
+        buffer: List[float or None] = []
         for j in range(n):
-            buffer.append(0)
+            buffer.append(None)
         graph.append(buffer)
 
     line_mask = np.zeros((image_height, image_width), dtype=np.uint8)
@@ -143,20 +143,21 @@ def get_the_biggest_gates(
                 # if pink_pixels_count / all_pixels_count >= 0.5:
                 #     # graph[i][j] = pink_pixels_count / all_pixels_count
                 #     graph[i][j] = pink_pixels_count
-                #     # cv2.line(
-                #     #     image_view,
-                #     #     (biggest_polygon[i].x, biggest_polygon[i].y),
-                #     #     (biggest_polygon[j].x, biggest_polygon[j].y),
-                #     #     (0, 255 * graph[i][j], 255 * graph[i][j]), 2
-                #     # )
+                cv2.line(
+                    image_view,
+                    (biggest_polygon[i].x, biggest_polygon[i].y),
+                    (biggest_polygon[j].x, biggest_polygon[j].y),
+                    (255 * graph[i][j], 0, 0), 3
+                )
                 # else:
                 #     graph[i][j] = 0
 
             else:
-                graph[i][j] = 0
+                graph[i][j] = 1
 
     max_gates: List[Point] = []
     max_similarity = MIN_GATES_EDGES_PINK_PERCENTAGE
+    result_diagonal_non_pink_percentage = None
 
     for curr_points in itertools.combinations(range(n), 4):
         curr_polygon = sort_vertexes([
@@ -166,7 +167,7 @@ def get_the_biggest_gates(
             biggest_polygon[curr_points[3]]
         ])
 
-        diagonal_pink_percentage = graph[curr_points[0]][curr_points[2]] + graph[curr_points[1]][curr_points[3]]
+        diagonal_non_pink_percentage = (1 - graph[curr_points[0]][curr_points[2]]) * (1 - graph[curr_points[1]][curr_points[3]])
 
         indexes: List[int] = [index_of_point(biggest_polygon, curr_polygon[0]),
                                 index_of_point(biggest_polygon, curr_polygon[1]),
@@ -178,9 +179,14 @@ def get_the_biggest_gates(
                             graph[indexes[2]][indexes[3]] * \
                             graph[indexes[3]][indexes[0]]
 
-        if curr_similarity > max_similarity and diagonal_pink_percentage < MAX_GATES_DIAGONAL_PINK_PERCENTAGE:
+        # if curr_similarity > max_similarity and diagonal_non_pink_percentage > MIN_GATES_DIAGONAL_NON_PINK_PERCENTAGE:
+        if curr_similarity > max_similarity:
+            result_diagonal_non_pink_percentage = diagonal_non_pink_percentage
             max_similarity = curr_similarity
             max_gates = curr_polygon
+
+    print("result_diagonal_non_pink_percentage", result_diagonal_non_pink_percentage)
+    print("max_similarity", max_similarity)
 
     cv2.imshow("Image view", image_view)
 

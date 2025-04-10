@@ -75,12 +75,9 @@ if __name__ == '__main__':
                 if len(_biggest_gates) != 4:
                     print("ERROR")  # Ошибка, если найдено не 4 точки
                 else:
-                    # Сортируем точки ворот по порядку (левый верхний, правый верхний и т.д.)
                     sorted_biggest_gates: List[Point] = sort_vertexes(_biggest_gates)
-                    # Отрисовываем найденные ворота на изображении
                     gates.draw_polygon(_result_image, sorted_biggest_gates)
-                    # Печатаем углы между сторонами ворот
-                    print(gates.get_gates_angles(sorted_biggest_gates))
+                    # print(gates.get_gates_angles(sorted_biggest_gates))
 
             # Отображаем изображения
             cv2.imshow('Camera', _input_image)  # Исходное изображение
