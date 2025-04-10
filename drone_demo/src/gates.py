@@ -6,6 +6,13 @@ import itertools
 from geometry import *
 
 
+# Потом прокомментирую
+MAX_GATES_DIAGONAL_PINK_PERCENTAGE = 0.6
+
+# Тоже потом
+MIN_GATES_EDGES_PINK_PERCENTAGE = 0.3
+
+
 def get_mask(
         image: Any,
         lower: np.array,
@@ -18,6 +25,8 @@ def get_mask(
     kernel = np.ones((2, 2), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+
+    cv2.imshow('Mask', mask)
 
     return mask
 
@@ -108,7 +117,6 @@ def get_the_biggest_gates(
             buffer.append(0)
         graph.append(buffer)
 
-
     line_mask = np.zeros((image_height, image_width), dtype=np.uint8)
     for i in range(n):
         for j in range(n):
@@ -131,23 +139,24 @@ def get_the_biggest_gates(
                 # Считаем количество розовых пикселей на линии
                 all_pixels_count = cv2.countNonZero(line_mask)
                 pink_pixels_count = cv2.countNonZero(intersection)
-                if pink_pixels_count / all_pixels_count >= 0.5:
-                    # graph[i][j] = pink_pixels_count / all_pixels_count
-                    graph[i][j] = pink_pixels_count
-                    # cv2.line(
-                    #     image_view,
-                    #     (biggest_polygon[i].x, biggest_polygon[i].y),
-                    #     (biggest_polygon[j].x, biggest_polygon[j].y),
-                    #     (0, 255 * graph[i][j], 255 * graph[i][j]), 2
-                    # )
-                else:
-                    graph[i][j] = 0
+                graph[i][j] = pink_pixels_count / all_pixels_count
+                # if pink_pixels_count / all_pixels_count >= 0.5:
+                #     # graph[i][j] = pink_pixels_count / all_pixels_count
+                #     graph[i][j] = pink_pixels_count
+                #     # cv2.line(
+                #     #     image_view,
+                #     #     (biggest_polygon[i].x, biggest_polygon[i].y),
+                #     #     (biggest_polygon[j].x, biggest_polygon[j].y),
+                #     #     (0, 255 * graph[i][j], 255 * graph[i][j]), 2
+                #     # )
+                # else:
+                #     graph[i][j] = 0
 
             else:
                 graph[i][j] = 0
 
     max_gates: List[Point] = []
-    max_similarity = 0
+    max_similarity = MIN_GATES_EDGES_PINK_PERCENTAGE
 
     for curr_points in itertools.combinations(range(n), 4):
         curr_polygon = sort_vertexes([
@@ -157,21 +166,26 @@ def get_the_biggest_gates(
             biggest_polygon[curr_points[3]]
         ])
 
-        if len(curr_polygon) != 4:
-            print("Чё")
-            while True:
-                pass
+        diagonal_pink_percentage = graph[curr_points[0]][curr_points[2]] + graph[curr_points[1]][curr_points[3]]
 
-        curr_similarity = graph[biggest_polygon.index(curr_polygon[0])][biggest_polygon.index(curr_polygon[1])] * \
-                            graph[biggest_polygon.index(curr_polygon[1])][biggest_polygon.index(curr_polygon[2])] * \
-                            graph[biggest_polygon.index(curr_polygon[2])][biggest_polygon.index(curr_polygon[3])] * \
-                            graph[biggest_polygon.index(curr_polygon[3])][biggest_polygon.index(curr_polygon[0])]
+        indexes: List[int] = [index_of_point(biggest_polygon, curr_polygon[0]),
+                                index_of_point(biggest_polygon, curr_polygon[1]),
+                                index_of_point(biggest_polygon, curr_polygon[2]),
+                                index_of_point(biggest_polygon, curr_polygon[3])]
 
-        if curr_similarity > max_similarity:
+        curr_similarity = graph[indexes[0]][indexes[1]] * \
+                            graph[indexes[1]][indexes[2]] * \
+                            graph[indexes[2]][indexes[3]] * \
+                            graph[indexes[3]][indexes[0]]
+
+        if curr_similarity > max_similarity and diagonal_pink_percentage < MAX_GATES_DIAGONAL_PINK_PERCENTAGE:
             max_similarity = curr_similarity
             max_gates = curr_polygon
 
     cv2.imshow("Image view", image_view)
+
+    if len(max_gates) != 4:
+        return None
 
     return max_gates
 

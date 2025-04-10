@@ -53,33 +53,43 @@ def get_the_biggest_polygon(polygons: List[List[Point]]) -> List[Point] or None:
     areas = list(map(polygon_area, polygons))
     return polygons[areas.index(max(areas))]
 
+def index_of_point(where: List[Point], which: Point) -> int or None:
+    for i in range(len(where)):
+        if where[i].x == which.x and where[i].y == which.y:
+            return i
+
+    return None
+
 def sort_vertexes(polygon: List[Point]) -> List[Point] or None:
     if polygon is None or len(polygon) != 4:
         return None
 
     result: List[Point] = []
 
-    center_of_polygon = polygon_center(polygon)
+    m = 1e9
+    ind = 0
 
     for i in range(len(polygon)):
-        for point in polygon:
-            if i == 0:
-                if point.x < center_of_polygon.x and point.y < center_of_polygon.y:
-                    result.append(point)
-            elif i == 1:
-                if point.x > center_of_polygon.x and point.y < center_of_polygon.y:
-                    result.append(point)
-            elif i == 2:
-                if point.x > center_of_polygon.x and point.y > center_of_polygon.y:
-                    result.append(point)
-            elif i == 3:
-                if point.x < center_of_polygon.x and point.y > center_of_polygon.y:
-                    result.append(point)
+        if m > polygon[i].x:
+            ind = i
+            m = polygon[i].x
 
-    if len(result) != 4:
-        print(polygon)
-        print(result)
-        while True:
-            pass
+    result.append(polygon[ind])
+    del polygon[ind]
+
+    a = [[None, [i.x - result[0].x, i.y - result[0].y]] for i in polygon]
+
+    for i, p in enumerate(a):
+        if p[1][0] != 0:
+            p[0] = p[1][1] / p[1][0]
+        else:
+            p[0] = float('inf')
+
+
+    a.sort()
+
+    for k, p in a:
+        point: Point = Point(p[0] + result[0].x, p[1]+result[0].y)
+        result.append(point)
 
     return result
