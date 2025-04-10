@@ -76,4 +76,10 @@ def sort_vertexes(polygon: List[Point]) -> List[Point] or None:
                 if point.x < center_of_polygon.x and point.y > center_of_polygon.y:
                     result.append(point)
 
+    if len(result) != 4:
+        print(polygon)
+        print(result)
+        while True:
+            pass
+
     return result

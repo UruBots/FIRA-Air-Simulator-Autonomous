@@ -35,7 +35,7 @@ def get_rects(
     rectangles_: List[List[Point]] = []
     for cnt_ in contours_:
         # Аппроксимация контура полигоном
-        epsilon_ = 0.03 * cv2.arcLength(cnt_, True)
+        epsilon_ = 0.01 * cv2.arcLength(cnt_, True)
         approx_ = cv2.approxPolyDP(cnt_, epsilon_, True)
 
         # Отрисовка контура (опционально)
@@ -92,6 +92,9 @@ def get_the_biggest_gates(
     if biggest_polygon is None:
         return None
 
+    image_view = image.copy()
+    draw_polygon(image_view, biggest_polygon)
+
     # Если ворота это и так четырехугольник, то возвращаем его без изменений
     if len(biggest_polygon) == 4:
         return biggest_polygon
@@ -105,7 +108,6 @@ def get_the_biggest_gates(
             buffer.append(0)
         graph.append(buffer)
 
-    image_view = image.copy()
 
     line_mask = np.zeros((image_height, image_width), dtype=np.uint8)
     for i in range(n):
@@ -130,14 +132,14 @@ def get_the_biggest_gates(
                 all_pixels_count = cv2.countNonZero(line_mask)
                 pink_pixels_count = cv2.countNonZero(intersection)
                 if pink_pixels_count / all_pixels_count >= 0.5:
-                    graph[i][j] = pink_pixels_count / all_pixels_count
-                    # graph[i][j] = pink_pixels_count
-                    cv2.line(
-                        image_view,
-                        (biggest_polygon[i].x, biggest_polygon[i].y),
-                        (biggest_polygon[j].x, biggest_polygon[j].y),
-                        (0, 255 * graph[i][j], 255 * graph[i][j]), 2
-                    )
+                    # graph[i][j] = pink_pixels_count / all_pixels_count
+                    graph[i][j] = pink_pixels_count
+                    # cv2.line(
+                    #     image_view,
+                    #     (biggest_polygon[i].x, biggest_polygon[i].y),
+                    #     (biggest_polygon[j].x, biggest_polygon[j].y),
+                    #     (0, 255 * graph[i][j], 255 * graph[i][j]), 2
+                    # )
                 else:
                     graph[i][j] = 0
 
@@ -147,23 +149,27 @@ def get_the_biggest_gates(
     max_gates: List[Point] = []
     max_similarity = 0
 
-    for curr_set_raw in itertools.combinations(range(n), 4):
-        for curr_set in itertools.permutations(curr_set_raw):
-            curr_similarity = graph[curr_set[0]][curr_set[1]] * \
-                                graph[curr_set[1]][curr_set[2]] * \
-                                graph[curr_set[2]][curr_set[3]] * \
-                                graph[curr_set[3]][curr_set[0]]
+    for curr_points in itertools.combinations(range(n), 4):
+        curr_polygon = sort_vertexes([
+            biggest_polygon[curr_points[0]],
+            biggest_polygon[curr_points[1]],
+            biggest_polygon[curr_points[2]],
+            biggest_polygon[curr_points[3]]
+        ])
 
+        if len(curr_polygon) != 4:
+            print("Чё")
+            while True:
+                pass
 
+        curr_similarity = graph[biggest_polygon.index(curr_polygon[0])][biggest_polygon.index(curr_polygon[1])] * \
+                            graph[biggest_polygon.index(curr_polygon[1])][biggest_polygon.index(curr_polygon[2])] * \
+                            graph[biggest_polygon.index(curr_polygon[2])][biggest_polygon.index(curr_polygon[3])] * \
+                            graph[biggest_polygon.index(curr_polygon[3])][biggest_polygon.index(curr_polygon[0])]
 
-            if curr_similarity > max_similarity:
-                max_similarity = curr_similarity
-                max_gates = [
-                    biggest_polygon[curr_set[0]],
-                    biggest_polygon[curr_set[1]],
-                    biggest_polygon[curr_set[2]],
-                    biggest_polygon[curr_set[3]]
-                ]
+        if curr_similarity > max_similarity:
+            max_similarity = curr_similarity
+            max_gates = curr_polygon
 
     cv2.imshow("Image view", image_view)
 
